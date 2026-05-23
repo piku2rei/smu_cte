@@ -1,0 +1,440 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.wrap { font-family: var(--font-sans); font-size: 15px; line-height: 1.7; color: var(--color-text-primary); padding: 0.5rem 0 2rem; }
+.activity-divider { height: 2px; background: var(--color-border-tertiary); margin: 2.5rem 0; border-radius: 2px; }
+.eyebrow { font-size: 11px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: var(--color-text-secondary); margin-bottom: 5px; }
+.act-title { font-size: 18px; font-weight: 500; margin-bottom: 4px; }
+.act-sub { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 1.25rem; line-height: 1.5; }
+.instr-box { background: var(--color-background-secondary); border-left: 3px solid #185FA5; border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0; padding: 0.75rem 1rem; font-size: 13px; line-height: 1.6; color: var(--color-text-primary); margin-bottom: 1.25rem; }
+.divider { height: 0.5px; background: var(--color-border-tertiary); margin: 1.25rem 0; }
+.badge { display: inline-block; font-size: 10px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 8px; border-radius: 99px; }
+.badge-coral { background: #FAECE7; color: #712B13; }
+.badge-teal { background: #E1F5EE; color: #085041; }
+.badge-purple { background: #EEEDFE; color: #3C3489; }
+.badge-amber { background: #FAEEDA; color: #633806; }
+.badge-blue { background: #E6F1FB; color: #0C447C; }
+
+.gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; margin-bottom: 1.25rem; }
+.specimen-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; cursor: pointer; transition: border-color 0.15s; }
+.specimen-card:hover { border-color: var(--color-border-secondary); }
+.specimen-card.revealed { border-color: #993C1D; }
+.spec-header { padding: 0.7rem 1rem; background: var(--color-background-secondary); border-bottom: 0.5px solid var(--color-border-tertiary); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.spec-label { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); }
+.spec-discipline { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 7px; border-radius: 99px; }
+.spec-body { padding: 0.9rem 1rem; }
+.spec-output { font-size: 12px; line-height: 1.65; color: var(--color-text-primary); background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 0.65rem 0.8rem; margin-bottom: 0.75rem; font-family: var(--font-serif); }
+.spec-q { font-size: 13px; font-weight: 500; margin-bottom: 8px; }
+.spec-choices { display: flex; flex-direction: column; gap: 6px; }
+.spec-choice { background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 6px 10px; font-size: 12px; cursor: pointer; color: var(--color-text-primary); font-family: var(--font-sans); text-align: left; transition: background 0.12s; }
+.spec-choice:hover { background: var(--color-background-secondary); }
+.spec-choice.correct { background: #E1F5EE; border-color: #0F6E56; color: #085041; cursor: default; }
+.spec-choice.wrong { background: #FAECE7; border-color: #993C1D; color: #712B13; cursor: default; }
+.spec-choice:disabled { cursor: default; }
+.spec-reveal { display: none; margin-top: 8px; padding: 0.65rem 0.8rem; border-radius: var(--border-radius-md); font-size: 12px; line-height: 1.6; }
+.spec-reveal.show { display: block; }
+.reveal-correct { background: #E1F5EE; color: #085041; border: 0.5px solid #5DCAA5; }
+.reveal-wrong { background: #FAECE7; color: #712B13; border: 0.5px solid #F0997B; }
+
+.combined-task { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; margin-bottom: 1.25rem; }
+.task-header { padding: 0.85rem 1.25rem; background: var(--color-background-secondary); border-bottom: 0.5px solid var(--color-border-tertiary); }
+.task-body { padding: 1.25rem; }
+.task-scenario { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 0.85rem 1rem; font-size: 13px; line-height: 1.6; margin-bottom: 1rem; border-left: 3px solid #534AB7; border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0; }
+.slider-row { display: flex; align-items: center; gap: 12px; margin-bottom: 0.5rem; }
+.slider-label { font-size: 13px; color: var(--color-text-secondary); width: 160px; flex-shrink: 0; line-height: 1.4; }
+.slider-val { font-size: 13px; font-weight: 500; min-width: 32px; text-align: right; }
+.axis-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--color-text-secondary); margin-bottom: 1.25rem; padding: 0 2px; }
+.result-panel { display: none; margin-top: 1rem; border-radius: var(--border-radius-md); padding: 0.85rem 1rem; font-size: 13px; line-height: 1.65; }
+.result-panel.show { display: block; }
+
+.sort-instructions { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 1rem; }
+.sort-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1rem; }
+.sort-col { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); min-height: 120px; padding: 0.75rem; }
+.sort-col-header { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.sort-col-header.teal { color: #085041; }
+.sort-col-header.coral { color: #712B13; }
+.sort-pool { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.25rem; }
+.sort-chip { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 5px 10px; font-size: 12px; cursor: pointer; color: var(--color-text-primary); font-family: var(--font-sans); transition: background 0.12s; }
+.sort-chip:hover { background: var(--color-background-primary); border-color: var(--color-border-primary); }
+.sort-chip.placed-can { background: #E1F5EE; color: #085041; border-color: #5DCAA5; cursor: default; }
+.sort-chip.placed-cannot { background: #FAECE7; color: #712B13; border-color: #F0997B; cursor: default; }
+.sort-check-btn { background: #003D7C; color: white; border: none; border-radius: var(--border-radius-md); padding: 8px 18px; font-size: 13px; font-family: var(--font-sans); cursor: pointer; }
+.sort-check-btn:hover { opacity: 0.85; }
+.sort-feedback { display: none; margin-top: 10px; padding: 0.75rem 1rem; border-radius: var(--border-radius-md); font-size: 13px; line-height: 1.6; }
+.sort-feedback.show { display: block; background: var(--color-background-secondary); border: 0.5px solid var(--color-border-secondary); }
+.score-line { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+</style>
+
+<h2 class="sr-only">Module 2 activities: Activity A — the limitation gallery (identify AI failure types), and Activity B — the AI capability map (combined sort and rate exercise).</h2>
+
+<div class="wrap">
+
+  <div class="eyebrow">Activity A · Module 2</div>
+  <p class="act-title">The limitation gallery</p>
+  <p class="act-sub">6 real AI outputs, each with a different type of failure. Your task: identify what went wrong — and what student knowledge would be needed to catch it.</p>
+  <div class="instr-box">
+    Read each AI output carefully. Select the failure type you think best describes the problem, then read the explanation. Some failures are subtle — that is the point. If AI always failed obviously, students would catch it themselves.
+  </div>
+
+  <div class="gallery-grid" id="gallery"></div>
+
+  <div class="divider"></div>
+
+  <div class="eyebrow">Activity B · Module 2</div>
+  <p class="act-title">The AI capability map — combined activity</p>
+  <p class="act-sub">Two parts: first sort tasks into what AI does well vs poorly, then rate each task by how central it is to disciplinary learning. The intersection reveals your redesign priorities.</p>
+
+  <div class="instr-box">
+    <strong>Part 1:</strong> Sort the tasks below into two columns — AI does this well, or AI struggles with this. Trust your instincts first, then check. <strong>Part 2:</strong> Once sorted, you will rate how central each task is to disciplinary learning. The combination produces your personal risk map.
+  </div>
+
+  <p style="font-size:13px;font-weight:500;margin-bottom:6px;">Part 1 — Sort these tasks</p>
+  <p class="sort-instructions">Click each task to assign it. Select a column first, then click tasks to place them there.</p>
+
+  <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <button class="sort-chip" id="col-can-btn" onclick="setTargetCol('can')" style="background:#E1F5EE;color:#085041;border-color:#5DCAA5;font-weight:500;">Place in: AI does well</button>
+    <button class="sort-chip" id="col-cannot-btn" onclick="setTargetCol('cannot')" style="background:#FAECE7;color:#712B13;border-color:#F0997B;font-weight:500;">Place in: AI struggles</button>
+  </div>
+
+  <div class="sort-pool" id="sort-pool"></div>
+
+  <div class="sort-columns">
+    <div class="sort-col" id="col-can">
+      <div class="sort-col-header teal"><i class="ti ti-circle-check" style="font-size:14px" aria-hidden="true"></i> AI does this well</div>
+      <div id="col-can-items" style="display:flex;flex-direction:column;gap:5px;"></div>
+    </div>
+    <div class="sort-col" id="col-cannot">
+      <div class="sort-col-header coral"><i class="ti ti-circle-x" style="font-size:14px" aria-hidden="true"></i> AI struggles with this</div>
+      <div id="col-cannot-items" style="display:flex;flex-direction:column;gap:5px;"></div>
+    </div>
+  </div>
+
+  <button class="sort-check-btn" id="check-sort-btn" onclick="checkSort()">Check my sorting</button>
+  <div class="sort-feedback" id="sort-feedback"></div>
+
+  <div id="part2-wrap" style="display:none;margin-top:1.5rem;">
+    <div class="divider"></div>
+    <p style="font-size:13px;font-weight:500;margin-bottom:4px;">Part 2 — How central is each task to disciplinary learning?</p>
+    <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:1rem;">Rate each task from 1 (peripheral) to 5 (absolutely central). Think about your own discipline — a task that is central in law may be peripheral in computing.</p>
+    <div id="slider-tasks"></div>
+    <button class="sort-check-btn" onclick="showRiskMap()">Generate my risk map</button>
+    <div class="result-panel" id="risk-result"></div>
+  </div>
+
+</div>
+
+<script>
+var specimens = [
+  {
+    id: "s1",
+    discipline: "Law",
+    discColor: "#EEEDFE",
+    discText: "#3C3489",
+    label: "AI output — legal analysis",
+    output: "In Sunshine Maritime Co v Atlas Freight Ltd [2019] SGHC 112, the Singapore High Court held that an exclusion clause in a bill of lading was ineffective to exclude liability for deliberate breach. The court applied the four-step framework from Photo Production Ltd v Securicor Transport Ltd [1980] AC 827, finding that the natural meaning of the clause did not cover the conduct in question.",
+    question: "What type of failure does this output contain?",
+    choices: [
+      { text: "Hallucinated case reference — the citation does not exist", correct: true },
+      { text: "Incorrect legal test — the wrong framework has been applied", correct: false },
+      { text: "Jurisdictional error — Singapore law does not apply here", correct: false },
+      { text: "No failure — this is accurate legal analysis", correct: false },
+    ],
+    correctFeedback: "Correct. Sunshine Maritime Co v Atlas Freight Ltd [2019] SGHC 112 does not exist. AI fabricated a plausible-sounding Singapore case citation, including a realistic neutral citation format. The Photo Production case is real. This is a classic hallucination pattern — real framework, invented precedent. A student without independent case verification skills would submit this without knowing.",
+    wrongFeedback: "Not quite. The most significant issue is that the primary case citation — Sunshine Maritime Co v Atlas Freight Ltd [2019] SGHC 112 — does not exist. AI invented a plausible-sounding Singapore High Court citation. This is a hallucination: the framework is real, the supporting case is fabricated. Students need the habit of verifying every citation independently.",
+  },
+  {
+    id: "s2",
+    discipline: "Economics",
+    discColor: "#E1F5EE",
+    discText: "#085041",
+    label: "AI output — policy analysis",
+    output: "Carbon taxes are widely regarded by economists as the most efficient instrument for reducing greenhouse gas emissions. By internalising the externality, they correct the market failure and achieve the socially optimal level of pollution. Most empirical evidence supports their effectiveness, and leading economists broadly agree that a carbon price of around $50–100 per tonne is appropriate for Singapore's context.",
+    question: "What type of failure does this output contain?",
+    choices: [
+      { text: "Factual error — carbon taxes are not considered efficient by economists", correct: false },
+      { text: "False consensus — overstates agreement and flattens genuine disciplinary debate", correct: true },
+      { text: "Irrelevant framing — this does not answer the question asked", correct: false },
+      { text: "No failure — this is accurate economic analysis", correct: false },
+    ],
+    correctFeedback: "Correct. This is the false consensus failure. While carbon taxes are supported by many economists, AI has presented contested policy territory as settled consensus. The specific price range given is not an agreed figure — it varies significantly across models, contexts, and political assumptions. A student submitting this would be presenting a particular position as economic orthodoxy when significant debate exists. This is one of AI's most insidious failure modes in social science disciplines: it sounds authoritative precisely because it smooths over disagreement.",
+    wrongFeedback: "The key failure here is false consensus. Carbon taxes are genuinely supported by many economists, but AI has overstated the degree of agreement and presented contested values ($50–100 per tonne) as if they were established figures. In disciplines where genuine intellectual debate matters — economics, law, social science — AI's tendency to produce confident-sounding consensus is a significant accuracy problem.",
+  },
+  {
+    id: "s3",
+    discipline: "Computing",
+    discColor: "#FAEEDA",
+    discText: "#633806",
+    label: "AI output — code review",
+    output: `def find_duplicates(lst):
+    seen = []
+    duplicates = []
+    for item in lst:
+        if item in seen:
+            duplicates.append(item)
+        else:
+            seen.append(item)
+    return duplicates
+
+# This function efficiently identifies duplicate values
+# in a list. Time complexity: O(n log n).`,
+    question: "What type of failure does this output contain?",
+    choices: [
+      { text: "Syntax error — the code will not run", correct: false },
+      { text: "Logic error — the function produces incorrect output", correct: false },
+      { text: "Performance error — incorrect complexity claim, inefficient implementation", correct: true },
+      { text: "No failure — this is correct and efficient code", correct: false },
+    ],
+    correctFeedback: "Correct. The code runs and produces correct output — but the comment is wrong. Using a list for 'seen' means each 'in' check is O(n), making the overall complexity O(n²), not O(n log n). An efficient implementation would use a set for O(1) lookups, giving true O(n) complexity. This is a subtle but important failure: the code works, the comment is plausible, but the claim is incorrect. A student who cannot analyse time complexity independently would submit this with a false performance claim.",
+    wrongFeedback: "The code runs correctly, so there is no syntax or logic error. The problem is in the comment: the function claims O(n log n) complexity but is actually O(n²) because it uses a list (not a set) for the 'seen' check. A set-based implementation would be genuinely O(n). This matters because the student has been asked to write efficient code — and AI has produced working but inefficient code with an incorrect performance claim attached.",
+  },
+  {
+    id: "s4",
+    discipline: "Accounting",
+    discColor: "#E6F1FB",
+    discText: "#0C447C",
+    label: "AI output — financial analysis",
+    output: "Based on the financial statements provided, TechCorp demonstrates strong liquidity with a current ratio of 2.4, well above the industry benchmark of 1.5–2.0. The company's profitability metrics are solid, with a net profit margin of 12.3%. Overall, the financial position appears healthy and the company is well-positioned for growth.",
+    question: "What type of failure does this output contain?",
+    choices: [
+      { text: "Ratio calculation error — the current ratio has been computed incorrectly", correct: false },
+      { text: "Contextually blind conclusion — ignores warning signals present in the data", correct: true },
+      { text: "Wrong benchmark — the industry standard cited is inaccurate", correct: false },
+      { text: "No failure — this is accurate financial analysis", correct: false },
+    ],
+    correctFeedback: "Correct. This is a contextual blindness failure. The ratios quoted may be accurate, but the conclusion — 'healthy and well-positioned for growth' — ignores information that would be visible to an analyst reading the full statements: for instance, that accounts receivable has grown faster than revenue for three consecutive quarters (a credit risk signal), or that the cash conversion cycle has lengthened significantly. AI produces optimistic, surface-level conclusions from headline numbers. Professional financial analysis requires reading behind the ratios — exactly what AI consistently fails to do.",
+    wrongFeedback: "The ratios quoted may be accurate. The failure is in the conclusion. A real financial analyst would look behind the headline numbers — checking whether the current ratio is driven by cash or by aging receivables, whether the profit margin is sustainable, whether the growth narrative is supported by cash flow data. AI produces tidy, confident conclusions from surface figures. The skill being assessed is precisely the ability to read what the numbers actually mean — which requires the full picture, not a summary.",
+  },
+  {
+    id: "s5",
+    discipline: "Social Science",
+    discColor: "#FAECE7",
+    discText: "#712B13",
+    label: "AI output — research methodology",
+    output: "To investigate the relationship between social media use and adolescent wellbeing, this study will employ a mixed-methods approach combining a quantitative survey of 500 participants aged 13–18 with semi-structured interviews with 20 participants. The survey will measure screen time and standardised wellbeing scales. This approach ensures both statistical validity and rich qualitative insight, providing a comprehensive understanding of the phenomenon.",
+    question: "What type of failure does this output contain?",
+    choices: [
+      { text: "Methodological contradiction — the methods are incompatible", correct: false },
+      { text: "Generic design — no original inquiry, merely restates standard approaches", correct: true },
+      { text: "Ethical oversight — no mention of consent for minor participants", correct: false },
+      { text: "No failure — this is a sound research proposal", correct: false },
+    ],
+    correctFeedback: "Correct. This is the generic design failure — and it is the most common AI failure in research-based assessments. The proposal is methodologically sound in a textbook sense. But it contains no original thinking: the research question is not novel, the design is the default mixed-methods template, and the justification ('ensures both statistical validity and rich qualitative insight') is a stock phrase. A strong research proposal should identify a specific gap in the literature, justify why this population and these measures are appropriate, and explain why this design — rather than a different one — is the best fit. AI produces competent-sounding proposals that have no intellectual fingerprint.",
+    wrongFeedback: "The methods are not incompatible and the design is technically sound. The issue is different: the proposal is entirely generic. There is no original research question emerging from a gap in the literature, no justification for why these specific measures or this specific sample are appropriate, and no distinctive intellectual contribution. AI produces well-structured proposals that tick methodological boxes without containing any actual research thinking. In social science research courses, this is often the hardest failure to articulate — which is why it is the most useful one to surface.",
+  },
+  {
+    id: "s6",
+    discipline: "Business",
+    discColor: "#EEEDFE",
+    discText: "#3C3489",
+    label: "AI output — strategic recommendation",
+    output: "Based on our analysis, we recommend that FreshMart pursue a market penetration strategy in Vietnam, leveraging its existing supply chain capabilities and brand recognition. Vietnam offers strong growth potential with a rising middle class and increasing demand for premium grocery products. Key risks include regulatory uncertainty and local competitor response, which can be mitigated through phased entry and local partnerships.",
+    question: "What type of failure does this output contain?",
+    choices: [
+      { text: "Strategy error — market penetration is the wrong framework here", correct: false },
+      { text: "Accountability gap — confident recommendation with no basis in the actual client context", correct: true },
+      { text: "Analytical error — the risk assessment is incomplete", correct: false },
+      { text: "No failure — this is reasonable strategic advice", correct: false },
+    ],
+    correctFeedback: "Correct. This is the accountability gap failure — and it is the most professionally significant. The recommendation sounds credible, but it is not grounded in anything specific about FreshMart: not its actual financials, not its real supply chain capabilities, not the specific competitive landscape it would face, not the regulatory environment as of this year. It is a plausible-sounding strategy template applied to a generic scenario. In a consulting context, this recommendation cannot be defended when a client asks 'why?' — because the reasoning is not tied to their actual situation. The ability to make recommendations that are specific, defensible, and grounded in real evidence is exactly what distinguishes a professional from a plausible text generator.",
+    wrongFeedback: "The strategy framing is not wrong, and the risk list is not obviously incomplete. The deeper issue is accountability: nothing in this recommendation is tied to FreshMart's actual capabilities, financial position, or competitive context. It is a template strategy applied to a name. A student who submits this has not demonstrated strategic analysis — they have demonstrated the ability to produce a convincing imitation of it. The question to ask: if a client said 'justify why Vietnam, why now, why this entry mode' — could the student answer? If the analysis was AI-generated, almost certainly not.",
+  },
+];
+
+var sortTasks = [
+  { id: "t1", text: "Write a 1,000-word essay on supply and demand", correct: "can" },
+  { id: "t2", text: "Defend a recommendation under live client questioning", correct: "cannot" },
+  { id: "t3", text: "Generate a first draft of a lab report", correct: "can" },
+  { id: "t4", text: "Identify a novel research gap from deep literature engagement", correct: "cannot" },
+  { id: "t5", text: "Summarise 10 academic papers into key themes", correct: "can" },
+  { id: "t6", text: "Apply a legal framework to a fact pattern never seen in training data", correct: "cannot" },
+  { id: "t7", text: "Write and run a standard Python data cleaning script", correct: "can" },
+  { id: "t8", text: "Exercise professional judgement with real consequences", correct: "cannot" },
+  { id: "t9", text: "Draft an outline for a business strategy report", correct: "can" },
+  { id: "t10", text: "Account for specific seminar discussion in a reflection piece", correct: "cannot" },
+];
+
+var sortAnswers = {};
+var targetCol = null;
+var sliderValues = {};
+
+function setTargetCol(col) {
+  targetCol = col;
+  document.getElementById('col-can-btn').style.outline = col === 'can' ? '2px solid #0F6E56' : 'none';
+  document.getElementById('col-cannot-btn').style.outline = col === 'cannot' ? '2px solid #993C1D' : 'none';
+}
+
+function buildGallery() {
+  var grid = document.getElementById('gallery');
+  specimens.forEach(function(sp) {
+    var card = document.createElement('div');
+    card.className = 'specimen-card';
+    card.id = 'card-' + sp.id;
+    var choicesHtml = sp.choices.map(function(c, i) {
+      return '<button class="spec-choice" onclick="checkSpecimen(\'' + sp.id + '\',' + i + ',this)">' + c.text + '</button>';
+    }).join('');
+    card.innerHTML =
+      '<div class="spec-header">' +
+        '<span class="spec-label">' + sp.label + '</span>' +
+        '<span class="spec-discipline" style="background:' + sp.discColor + ';color:' + sp.discText + '">' + sp.discipline + '</span>' +
+      '</div>' +
+      '<div class="spec-body">' +
+        '<div class="spec-output">' + sp.output.replace(/\n/g,'<br>') + '</div>' +
+        '<p class="spec-q">' + sp.question + '</p>' +
+        '<div class="spec-choices" id="choices-' + sp.id + '">' + choicesHtml + '</div>' +
+        '<div class="spec-reveal" id="reveal-' + sp.id + '"></div>' +
+      '</div>';
+    grid.appendChild(card);
+  });
+}
+
+function checkSpecimen(id, choiceIdx, btn) {
+  var sp = specimens.find(function(s){ return s.id === id; });
+  var container = document.getElementById('choices-' + id);
+  var btns = container.querySelectorAll('.spec-choice');
+  btns.forEach(function(b) { b.disabled = true; });
+  var isCorrect = sp.choices[choiceIdx].correct;
+  btn.classList.add(isCorrect ? 'correct' : 'wrong');
+  var reveal = document.getElementById('reveal-' + id);
+  reveal.textContent = isCorrect ? sp.correctFeedback : sp.wrongFeedback;
+  reveal.className = 'spec-reveal show ' + (isCorrect ? 'reveal-correct' : 'reveal-wrong');
+  if (isCorrect) document.getElementById('card-' + id).classList.add('revealed');
+}
+
+function buildSortPool() {
+  var pool = document.getElementById('sort-pool');
+  sortTasks.forEach(function(t) {
+    var chip = document.createElement('button');
+    chip.className = 'sort-chip';
+    chip.id = 'chip-' + t.id;
+    chip.textContent = t.text;
+    chip.onclick = function() { placeTask(t.id); };
+    pool.appendChild(chip);
+  });
+}
+
+function placeTask(tid) {
+  if (!targetCol) {
+    alert('Select a column first — "AI does well" or "AI struggles".');
+    return;
+  }
+  var task = sortTasks.find(function(t){ return t.id === tid; });
+  var chip = document.getElementById('chip-' + tid);
+  if (chip.classList.contains('placed-can') || chip.classList.contains('placed-cannot')) return;
+  sortAnswers[tid] = targetCol;
+  chip.classList.add('placed-' + targetCol);
+  chip.disabled = true;
+  var colItems = document.getElementById('col-' + targetCol + '-items');
+  var placed = document.createElement('div');
+  placed.style.cssText = 'font-size:12px;padding:4px 8px;border-radius:var(--border-radius-md);background:' + (targetCol === 'can' ? '#E1F5EE' : '#FAECE7') + ';color:' + (targetCol === 'can' ? '#085041' : '#712B13') + ';';
+  placed.textContent = task.text;
+  colItems.appendChild(placed);
+}
+
+function checkSort() {
+  var placed = Object.keys(sortAnswers).length;
+  if (placed < sortTasks.length) {
+    document.getElementById('sort-feedback').innerHTML = '<p style="color:var(--color-text-secondary);font-size:13px;">Please sort all ' + sortTasks.length + ' tasks before checking (' + placed + ' placed so far).</p>';
+    document.getElementById('sort-feedback').classList.add('show');
+    return;
+  }
+  var correct = 0;
+  var wrong = [];
+  sortTasks.forEach(function(t) {
+    if (sortAnswers[t.id] === t.correct) {
+      correct++;
+    } else {
+      wrong.push(t);
+    }
+  });
+  var fb = document.getElementById('sort-feedback');
+  var pct = Math.round(correct / sortTasks.length * 100);
+  var html = '<p class="score-line">' + correct + ' of ' + sortTasks.length + ' correct (' + pct + '%)</p>';
+  if (wrong.length > 0) {
+    html += '<p style="margin-bottom:6px;font-size:13px;">Tasks to reconsider:</p>';
+    wrong.forEach(function(t) {
+      var shouldBe = t.correct === 'can' ? 'AI does well' : 'AI struggles';
+      html += '<p style="font-size:12px;margin-bottom:4px;padding:5px 8px;background:var(--color-background-primary);border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);">' +
+        '<strong>' + t.text + '</strong> — should be: <em>' + shouldBe + '</em></p>';
+    });
+    html += '<p style="font-size:12px;color:var(--color-text-secondary);margin-top:8px;">Note: some tasks depend on disciplinary context. The classifications above reflect general AI performance — your discipline may have nuances that shift these.</p>';
+  } else {
+    html += '<p style="font-size:13px;">All correct. Proceed to Part 2 to map these against disciplinary centrality.</p>';
+  }
+  fb.innerHTML = html;
+  fb.classList.add('show');
+  document.getElementById('part2-wrap').style.display = 'block';
+  buildSliders();
+}
+
+function buildSliders() {
+  var container = document.getElementById('slider-tasks');
+  container.innerHTML = '';
+  sortTasks.forEach(function(t) {
+    sliderValues[t.id] = 3;
+    var isCan = (sortAnswers[t.id] || t.correct) === 'can';
+    var div = document.createElement('div');
+    div.style.cssText = 'margin-bottom:1rem;padding:0.75rem;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);';
+    div.innerHTML =
+      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">' +
+        '<span style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.05em;padding:2px 7px;border-radius:99px;background:' + (isCan ? '#E1F5EE' : '#FAECE7') + ';color:' + (isCan ? '#085041' : '#712B13') + '">' + (isCan ? 'AI does well' : 'AI struggles') + '</span>' +
+        '<span style="font-size:13px;font-weight:500;">' + t.text + '</span>' +
+      '</div>' +
+      '<div style="display:flex;align-items:center;gap:10px;">' +
+        '<span style="font-size:11px;color:var(--color-text-secondary);width:70px">Peripheral</span>' +
+        '<input type="range" min="1" max="5" step="1" value="3" style="flex:1" oninput="updateSlider(\'' + t.id + '\',this.value,this.nextElementSibling)">' +
+        '<span style="font-size:13px;font-weight:500;width:16px;text-align:center" id="sv-' + t.id + '">3</span>' +
+        '<span style="font-size:11px;color:var(--color-text-secondary);width:60px;text-align:right">Central</span>' +
+      '</div>';
+    container.appendChild(div);
+  });
+}
+
+function updateSlider(tid, val, display) {
+  sliderValues[tid] = parseInt(val);
+  display.textContent = val;
+}
+
+function showRiskMap() {
+  var highRisk = [], medRisk = [], wellProtected = [];
+  sortTasks.forEach(function(t) {
+    var centrality = sliderValues[t.id] || 3;
+    var aiPerf = (sortAnswers[t.id] || t.correct) === 'can';
+    if (centrality >= 4 && aiPerf) highRisk.push({ text: t.text, c: centrality });
+    else if (centrality >= 4 && !aiPerf) wellProtected.push({ text: t.text, c: centrality });
+    else if (centrality <= 2 && aiPerf) medRisk.push({ text: t.text, c: centrality });
+  });
+
+  var html = '<p style="font-size:14px;font-weight:500;margin-bottom:10px;">Your personal risk map</p>';
+
+  if (highRisk.length > 0) {
+    html += '<div style="background:#FAECE7;border-radius:var(--border-radius-md);padding:0.75rem;margin-bottom:8px;border:0.5px solid #F0997B;">';
+    html += '<p style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:#712B13;margin-bottom:5px;">Redesign priority — central to discipline, AI does well</p>';
+    highRisk.forEach(function(t){ html += '<p style="font-size:12px;color:#712B13;margin-bottom:2px;">· ' + t.text + '</p>'; });
+    html += '</div>';
+  }
+  if (wellProtected.length > 0) {
+    html += '<div style="background:#E1F5EE;border-radius:var(--border-radius-md);padding:0.75rem;margin-bottom:8px;border:0.5px solid #5DCAA5;">';
+    html += '<p style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:#085041;margin-bottom:5px;">Well protected — central to discipline, AI struggles</p>';
+    wellProtected.forEach(function(t){ html += '<p style="font-size:12px;color:#085041;margin-bottom:2px;">· ' + t.text + '</p>'; });
+    html += '</div>';
+  }
+  if (medRisk.length > 0) {
+    html += '<div style="background:#FAEEDA;border-radius:var(--border-radius-md);padding:0.75rem;margin-bottom:8px;border:0.5px solid #EF9F27;">';
+    html += '<p style="font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:#633806;margin-bottom:5px;">Monitor — peripheral but AI does well</p>';
+    medRisk.forEach(function(t){ html += '<p style="font-size:12px;color:#633806;margin-bottom:2px;">· ' + t.text + '</p>'; });
+    html += '</div>';
+  }
+
+  html += '<p style="font-size:12px;color:var(--color-text-secondary);margin-top:10px;line-height:1.6;">Tasks in the redesign priority zone are where your assessment design matters most. If these tasks appear in your current course assessments, they are worth examining through the two-question test: could a student who understood nothing produce a passing submission? Would you be able to tell the difference?</p>';
+  html += '<button onclick="sendPrompt(\'Help me redesign one of my high-risk assessments using the two-question test\')" style="margin-top:10px;font-size:13px;">Help me redesign a high-risk assessment ↗</button>';
+
+  var panel = document.getElementById('risk-result');
+  panel.innerHTML = html;
+  panel.className = 'result-panel show';
+  panel.style.background = 'var(--color-background-secondary)';
+  panel.style.border = '0.5px solid var(--color-border-secondary)';
+}
+
+buildGallery();
+buildSortPool();
+</script>
